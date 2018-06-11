@@ -1,6 +1,6 @@
 # EEA Sentry
 
-Enhanced Docker image for [Sentry](https://github.com/getsentry/sentry) with [Github Auth](https://github.com/getsentry/sentry-auth-github)
+Enhanced Docker image for [Sentry](https://github.com/getsentry/sentry) with [Github Auth](https://github.com/getsentry/sentry-auth-github) and [Redmine](https://github.com/getsentry/sentry-redmine)
 
 ## Supported tags and respective Dockerfile links
 
@@ -8,11 +8,11 @@ Enhanced Docker image for [Sentry](https://github.com/getsentry/sentry) with [Gi
 
 ## Base docker image
 
- - [eeacms/sentry](https://hub.docker.com/r/eeacms/sentry/)
+ - [eeacms/matrix-riotweb](https://hub.docker.com/r/eeacms/sentry/)
 
 ## Source code
 
-  - [eea/eea.docker.sentry](http://github.com/eea/eea.docker.sentry)
+  - [eea/eea.docker.matrix.riot](http://github.com/eea/eea.docker.sentry)
 
 ## Variables
 

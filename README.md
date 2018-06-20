@@ -8,11 +8,11 @@ Enhanced Docker image for [Sentry](https://github.com/getsentry/sentry) with [Gi
 
 ## Base docker image
 
- - [eeacms/matrix-riotweb](https://hub.docker.com/r/eeacms/sentry/)
+ - [eeacms/sentry](https://hub.docker.com/r/eeacms/sentry/)
 
 ## Source code
 
-  - [eea/eea.docker.matrix.riot](http://github.com/eea/eea.docker.sentry)
+  - [eea/eea.docker.sentry](http://github.com/eea/eea.docker.sentry)
 
 ## Variables
 

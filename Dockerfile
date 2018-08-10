@@ -9,5 +9,4 @@ ARG SENTRY_REDMINE_VERSION=ccf4686515995d530842639625f54da712e3c21b
 RUN cd /tmp \
  && git clone $SENTRY_AUTH_REPO && cd sentry-auth-github && git checkout $SENTRY_AUTH_VERSION && pip install . && cd ../ \
  && git clone $SENTRY_REDMINE_REPO && cd sentry-redmine && git checkout $SENTRY_REDMINE_VERSION && pip install . && cd ../ \
- && pip install --upgrade redis \
  && rm -vrf /tmp/sentry-*

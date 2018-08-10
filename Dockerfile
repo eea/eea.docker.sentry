@@ -10,3 +10,8 @@ RUN cd /tmp \
  && git clone $SENTRY_AUTH_REPO && cd sentry-auth-github && git checkout $SENTRY_AUTH_VERSION && pip install . && cd ../ \
  && git clone $SENTRY_REDMINE_REPO && cd sentry-redmine && git checkout $SENTRY_REDMINE_VERSION && pip install . && cd ../ \
  && rm -vrf /tmp/sentry-*
+
+# Temporary, downgrade redis-py-cluster until the redis version incompatibility is fixed:
+RUN pip install redis-py-cluster==1.3.4
+
+

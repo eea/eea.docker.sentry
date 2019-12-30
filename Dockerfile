@@ -1,4 +1,4 @@
-FROM sentry:9.0.0
+FROM sentry:9.1.2
 LABEL maintainer="EEA: IDM2 A-Team <eea-edw-a-team-alerts@googlegroups.com>"
 
 ARG SENTRY_AUTH_REPO=https://github.com/getsentry/sentry-auth-github.git

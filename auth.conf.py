@@ -32,6 +32,9 @@ AUTHENTICATION_BACKENDS = AUTHENTICATION_BACKENDS + (
     'sentry_ldap_auth.backend.SentryLdapBackend',
 )
 
+# disable register on login page
+SENTRY_FEATURES['auth:register'] = False
+
 # setup logging for django_auth_ldap
 import logging
 logger = logging.getLogger('django_auth_ldap')

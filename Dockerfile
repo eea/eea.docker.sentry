@@ -1,4 +1,4 @@
-FROM sentry:10.0.1
+FROM getsentry/sentry:10.0.1
 LABEL maintainer="EEA: IDM2 A-Team <eea-edw-a-team-alerts@googlegroups.com>"
 
 ARG SENTRY_REDMINE_REPO=https://github.com/getsentry/sentry-redmine.git

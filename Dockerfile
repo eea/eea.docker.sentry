@@ -8,7 +8,7 @@ ARG SENTRY_AUTH_REPO=https://github.com/getsentry/sentry-auth-github.git
 ARG SENTRY_AUTH_VERSION=43f6b270b3fac32326518a78be77562ebe5abacf
 
 # Temporary, downgrade redis-py-cluster until the redis version incompatibility is fixed:
-RUN apt-get update && apt-get install -y git libsasl2-dev python-dev libldap2-dev libssl-dev && \
+RUN apt-get update && apt-get install -y git gcc libsasl2-dev python-dev libldap2-dev libssl-dev && \
     pip install redis-py-cluster==1.3.4 sentry-ldap-auth && \
     rm -rf /var/lib/apt/lists/*
 

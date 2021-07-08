@@ -9,6 +9,7 @@ if [ -n "$tempor" ]; then
 	stack_name=$tempor
 fi
 
+rancher stop $stack_name
 
 container_list=$(rancher ps -c | grep " $stack_name-")
 container_id=''

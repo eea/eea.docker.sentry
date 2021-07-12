@@ -1,6 +1,3 @@
-# flake8: noqa
-from __future__ import absolute_import
-
 # This file is just Python, with a touch of Django which means
 # you can inherit and tweak settings to your hearts content.
 
@@ -32,11 +29,43 @@ from __future__ import absolute_import
 #  SENTRY_MAILGUN_API_KEY
 #  SENTRY_SINGLE_ORGANIZATION
 #  SENTRY_SECRET_KEY
-from sentry.conf.server import *
-from sentry.utils.types import Bool
 
+from sentry.conf.server import *  # NOQA
+from sentry.utils.types import Bool
+ 
 import os
 import os.path
+
+
+
+# Generously adapted from pynetlinux: https://git.io/JJmga
+def get_internal_network():
+    import ctypes
+    import fcntl
+    import math
+    import socket
+    import struct
+
+    iface = b"eth0"
+    sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ifreq = struct.pack(b"16sH14s", iface, socket.AF_INET, b"\x00" * 14)
+
+    try:
+        ip = struct.unpack(
+            b"!I", struct.unpack(b"16sH2x4s8x", fcntl.ioctl(sockfd, 0x8915, ifreq))[2]
+        )[0]
+        netmask = socket.ntohl(
+            struct.unpack(b"16sH2xI8x", fcntl.ioctl(sockfd, 0x891B, ifreq))[2]
+        )
+    except IOError:
+        return ()
+    base = socket.inet_ntoa(struct.pack(b"!I", ip & netmask))
+    netmask_bits = 32 - int(round(math.log(ctypes.c_uint32(~netmask).value + 1, 2), 1))
+    return "{0:s}/{1:d}".format(base, netmask_bits)
+
+
+INTERNAL_SYSTEM_IPS = (get_internal_network(),)
+
 
 CONF_ROOT = os.path.dirname(__file__)
 env = os.environ.get
@@ -83,9 +112,14 @@ SENTRY_USE_BIG_INTS = True
 # General #
 ###########
 
+
 # Instruct Sentry that this install intends to be run by a single organization
 # and thus various UI optimizations should be enabled.
 SENTRY_SINGLE_ORGANIZATION = Bool(env('SENTRY_SINGLE_ORGANIZATION', True))
+
+SENTRY_OPTIONS["system.event-retention-days"] = int(
+    env("SENTRY_EVENT_RETENTION_DAYS", "90")
+)
 
 #########
 # Redis #
@@ -140,6 +174,19 @@ if memcached:
 
 # A primary cache is required for things such as processing events
 SENTRY_CACHE = 'sentry.cache.redis.RedisCache'
+
+
+DEFAULT_KAFKA_OPTIONS = {
+    "bootstrap.servers": "kafka:9092",
+    "message.max.bytes": 50000000,
+    "socket.timeout.ms": 1000,
+}
+
+SENTRY_EVENTSTREAM = "sentry.eventstream.kafka.KafkaEventStream"
+SENTRY_EVENTSTREAM_OPTIONS = {"producer_configuration": DEFAULT_KAFKA_OPTIONS}
+
+KAFKA_CLUSTERS["default"] = DEFAULT_KAFKA_OPTIONS
+
 
 #########
 # Queue #
@@ -219,17 +266,6 @@ SENTRY_TSDB_OPTIONS = {"switchover_timestamp": 1625740439 + (90 * 24 * 3600)}
 
 SENTRY_DIGESTS = 'sentry.digests.backends.redis.RedisBackend'
 
-################
-# File storage #
-################
-
-# Uploaded media uses these `filestore` settings. The available
-# backends are either `filesystem` or `s3`.
-
-SENTRY_OPTIONS['filestore.backend'] = 'filesystem'
-SENTRY_OPTIONS['filestore.options'] = {
-    'location': env('SENTRY_FILESTORE_DIR'),
-}
 
 ##############
 # Web Server #
@@ -238,16 +274,39 @@ SENTRY_OPTIONS['filestore.options'] = {
 # If you're using a reverse SSL proxy, you should enable the X-Forwarded-Proto
 # header and set `SENTRY_USE_SSL=1`
 
-if Bool(env('SENTRY_USE_SSL', False)):
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
 
-SENTRY_WEB_HOST = '0.0.0.0'
+SENTRY_WEB_HOST = "0.0.0.0"
 SENTRY_WEB_PORT = 9000
 SENTRY_WEB_OPTIONS = {
-    # 'workers': 1,  # the number of web workers
+    "http": "%s:%s" % (SENTRY_WEB_HOST, SENTRY_WEB_PORT),
+    "protocol": "uwsgi",
+    # This is needed in order to prevent https://git.io/fj7Lw
+    "uwsgi-socket": None,
+    "so-keepalive": True,
+    # Keep this between 15s-75s as that's what Relay supports
+    "http-keepalive": 15,
+    "http-chunked-input": True,
+    # the number of web workers
+    "workers": 3,
+    "threads": 4,
+    "memory-report": False,
+    # Some stuff so uwsgi will cycle workers sensibly
+    "max-requests": 100000,
+    "max-requests-delta": 500,
+    "max-worker-lifetime": 86400,
+    # Duplicate options from sentry default just so we don't get
+    # bit by sentry changing a default value that we depend on.
+    "thunder-lock": True,
+    "log-x-forwarded-for": False,
+    "buffer-size": 32768,
+    "limit-post": 209715200,
+    "disable-logging": True,
+    "reload-on-rss": 600,
+    "ignore-sigpipe": True,
+    "ignore-write-errors": True,
+    "disable-write-exception": True,
 }
+
 
 ###############
 # Mail Server #
@@ -298,6 +357,12 @@ if 'SENTRY_RUNNING_UWSGI' not in os.environ and len(secret_key) < 32:
 
 SENTRY_OPTIONS['system.secret-key'] = secret_key
 
+####################
+# Sentry LDAP AUTH #
+####################
+
+
+
 import ldap
 from django_auth_ldap.config import LDAPSearch, LDAPSearchUnion
 
@@ -345,3 +410,44 @@ LOGGING['loggers']['django_auth_ldap'] = {
     'handlers': ['console'],
     'level': 'DEBUG'
 }
+
+############
+# Features #
+############
+
+SENTRY_FEATURES["projects:sample-events"] = False
+SENTRY_FEATURES.update(
+    {
+        feature: True
+        for feature in (
+            "organizations:discover",
+            "organizations:events",
+            "organizations:global-views",
+            "organizations:incidents",
+            "organizations:integrations-issue-basic",
+            "organizations:integrations-issue-sync",
+            "organizations:invite-members",
+            "organizations:metric-alert-builder-aggregate",
+            "organizations:sso-basic",
+            "organizations:sso-rippling",
+            "organizations:sso-saml2",
+            "organizations:performance-view",
+            "organizations:advanced-search",
+            "projects:custom-inbound-filters",
+            "projects:data-forwarding",
+            "projects:discard-groups",
+            "projects:plugins",
+            "projects:rate-limits",
+            "projects:servicehooks",
+        )
+    }
+)
+
+#######################
+# MaxMind Integration #
+#######################
+
+GEOIP_PATH_MMDB = '/geoip/GeoLite2-City.mmdb'
+
+
+

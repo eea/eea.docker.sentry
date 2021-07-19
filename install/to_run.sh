@@ -152,22 +152,56 @@ get_id web
 
 
 
-if [[ -n "${CI:-}" || "${SKIP_USER_PROMPT:-0}" == 1 ]]; then
-  rancher exec $container_id /docker-entrypoint.sh upgrade --noinput
-  echo ""
-  echo "Did not prompt for user creation due to non-interactive shell."
-  echo "Run the following command to create one yourself (recommended):"
-  echo ""
-  echo "  docker-compose run --rm web createuser"
-  echo ""
-else
-  rancher exec $container_id /docker-entrypoint.sh upgrade
-fi
+# upgrade takes too much time to do this
+
+#if [[ -n "${CI:-}" || "${SKIP_USER_PROMPT:-0}" == 1 ]]; then
+#  rancher exec $container_id /docker-entrypoint.sh upgrade --noinput
+#  echo ""
+#  echo "Did not prompt for user creation due to non-interactive shell."
+#  echo "Run the following command to create one yourself (recommended):"
+#  echo ""
+#  echo "  docker-compose run --rm web createuser"
+#  echo ""
+#else
+#  rancher exec $container_id /docker-entrypoint.sh upgrade
+#fi
 
 #migrate /data to /data/files
 
-
 rancher exec $container_id /bin/sh -c 'mkdir -p /data/files; for i in $(ls /data | grep -v files); do mv /data/$i /data/files/$i; done; chown -R sentry:sentry /data'
+
+# run manually
+
+echo "The most important one would be the output of sentry upgrade command. That said during that upgrade, almost all other services need to be up and running (kafka, zookeeper, clickhouse, snuba, post-process-forwarder, redis, and postgres) and any issue with those would cause missing or corrupted events."
+
+echo "Please run manually this commands"
+echo "rancher exec $container_id /bin/bash"
+echo "apt-get update"
+echo "apt-get install screen procps"
+echo "screen -S upgrade"
+echo "/bin/bash"
+echo "/docker-entrypoint.sh upgrade --noinput"
+
+
+
+
+#fix post-processor error https://github.com/getsentry/onpremise/issues/478
+#get_id kafka
+
+#    if [[ "$container_status" == "stopped" ]]; then
+#        echo "Starting container kafka"
+#        rancher start $container_id
+#        sleep 15
+#    fi
+     
+
+#The most important one would be the output of sentry upgrade command. That said during that upgrade, almost all other services need to be up and running (kafka, zookeeper, clickhouse, snuba, post-process-forwarder, redis, and postgres) and any issue with those would cause missing or corrupted events. You’ll need to go to 9.1.2 first as usual.
+
+#Only if there is a problem on migration
+#rancher exec $container_id /bin/bash -c "kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --group snuba-post-processor --topic events --reset-offsets --to-latest --execute"
+#rancher exec $container_id /bin/bash -c "kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --group snuba-transactions-subscriptions-consumers --topic events --reset-offsets --to-latest --execute"
+#rancher exec $container_id /bin/bash -c "kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --group snuba-events-subscriptions-consumers --topic events --reset-offsets --to-latest --execute"
+
 
 else
         echo "Skipping sentry web"

@@ -1,4 +1,4 @@
-FROM getsentry/relay:21.6.1
+FROM getsentry/relay:21.7.0
 
 COPY config.example.yml /tmp/config.yml
 

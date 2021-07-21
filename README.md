@@ -2,6 +2,9 @@
 
 Enhanced Docker image for [Sentry](https://github.com/getsentry/sentry) with [Github Auth](https://github.com/getsentry/sentry-auth-github) and [Redmine](https://github.com/getsentry/sentry-redmine)
 
+Based on: https://github.com/getsentry/onpremise
+
+
 ## Supported tags and respective Dockerfile links
 
   - [Tags](https://hub.docker.com/r/eeacms/sentry/tags/)

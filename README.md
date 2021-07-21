@@ -17,11 +17,11 @@ Based on: https://github.com/getsentry/onpremise
 
   - [eea/eea.docker.sentry](http://github.com/eea/eea.docker.sentry)
 
-## Variables
+## Images
 
-* `GITHUB_APP_ID` - Github Application ID.
-* `GITHUB_API_SECRET` - Github Application secret key.
-* See all supported [environment variables](https://hub.docker.com/_/sentry/)
+* Sentry ( getsentry/sentry + configuration )
+* Relay ( getsentry/relay + configuration )
+* Posgres ( posgres + configuration )
 
 ## Usage
 

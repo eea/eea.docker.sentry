@@ -1,4 +1,4 @@
-FROM getsentry/sentry:21.6.1 
+FROM getsentry/sentry:21.6.3 
 
 COPY config/* /etc/sentry/
 

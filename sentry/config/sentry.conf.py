@@ -449,5 +449,6 @@ SENTRY_FEATURES.update(
 
 GEOIP_PATH_MMDB = '/geoip/GeoLite2-City.mmdb'
 
-
+#DISABLE BEACON https://forum.sentry.io/t/use-install-sh-want-to-know-where-the-data-is-stored/11127/4
+SENTRY_BEACON = False
 

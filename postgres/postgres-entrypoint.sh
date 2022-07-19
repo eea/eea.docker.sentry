@@ -34,5 +34,5 @@ if [ "$1" = 'postgres' ]; then
     cdc_setup_hba_conf
 fi
 
-exec /docker-entrypoint.sh "$@"
+exec /usr/local/bin/docker-entrypoint.sh "$@"
 

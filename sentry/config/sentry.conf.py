@@ -433,6 +433,7 @@ SENTRY_FEATURES.update(
             "organizations:sso-saml2",
             "organizations:performance-view",
             "organizations:advanced-search",
+            "organizations:session-replay",
             "projects:custom-inbound-filters",
             "projects:data-forwarding",
             "projects:discard-groups",
